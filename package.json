@@ -6,6 +6,6 @@
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "build": "cd frontend && npm install && npm run build",
-    "start": "cd backend && npm install && node src/server.js"
+    "start": "cd backend && npm install && node --experimental-sqlite src/server.js"
   }
 }
