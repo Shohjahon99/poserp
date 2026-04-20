@@ -181,7 +181,7 @@ export default function Landing({ onLogin }: Props) {
                     <input className="input" value={reg.address} onChange={e => setReg(r => ({ ...r, address: e.target.value }))} placeholder="Toshkent, Chilonzor tumani" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1 flex items-center gap-1"><Store size={13} /> Do'kon nomi *</label>
+                    <label className="block text-sm font-medium mb-1 flex items-center gap-1"><ShieldCheck size={13} /> Do'kon nomi *</label>
                     <input className="input" value={reg.store_name} onChange={e => setReg(r => ({ ...r, store_name: e.target.value }))} placeholder="Baraka Market" />
                   </div>
                   <button onClick={handleRegister} disabled={regLoading} className="btn btn-primary w-full btn-lg">
