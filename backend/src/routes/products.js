@@ -20,7 +20,9 @@ router.get('/', (req, res) => {
     const cleaned = barcode.replace(/^\][A-Za-z]\d/, '').trim();
     // GTIN ni ajratib olish (01 + 14 raqam) — GS1 DataMatrix uchun
     const gtinMatch = cleaned.match(/01(\d{14})/);
+    // GTIN dan bosh nolle olib tashlash (DB da ham shunday saqlanadi)
     const gtin = gtinMatch ? gtinMatch[1] : null;
+    const gtinStripped = gtin ? gtin.replace(/^0+/, '') : null;
 
     const conds = [
       'p.barcode = ?',                              // aynan mos
@@ -31,15 +33,28 @@ router.get('/', (req, res) => {
     params.push(barcode, cleaned, barcode, cleaned);
 
     if (gtin) {
-      conds.push('p.barcode = ?');                  // faqat GTIN
+      conds.push('p.barcode = ?');                  // GTIN (with leading zeros)
       conds.push('p.barcode LIKE ?');               // GTIN ichida
       params.push(gtin, `%${gtin}%`);
+    }
+    if (gtinStripped && gtinStripped !== gtin) {
+      conds.push('p.barcode = ?');                  // GTIN (leading zeros olib tashlangan)
+      conds.push('p.barcode LIKE ?');               // GTIN stripped ichida
+      params.push(gtinStripped, `%${gtinStripped}%`);
     }
 
     sql += ' AND (' + conds.join(' OR ') + ')';
   } else if (search) {
-    sql += ' AND (p.name LIKE ? OR p.barcode LIKE ?)';
-    params.push(`%${search}%`, `%${search}%`);
+    // Search: nom yoki barcode bo'yicha, GS1 GTIN ham tekshiriladi
+    const searchGtinMatch = search.replace(/^\][A-Za-z]\d/, '').match(/01(\d{14})/);
+    const searchGtin = searchGtinMatch ? searchGtinMatch[1].replace(/^0+/, '') : null;
+    if (searchGtin) {
+      sql += ' AND (p.name LIKE ? OR p.barcode LIKE ? OR p.barcode = ?)';
+      params.push(`%${search}%`, `%${search}%`, searchGtin);
+    } else {
+      sql += ' AND (p.name LIKE ? OR p.barcode LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
   }
 
   if (category) {
