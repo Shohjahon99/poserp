@@ -82,7 +82,7 @@ router.post('/login', loginLimiter, (req, res) => {
       name: user.name,
     },
     JWT_SECRET,
-    { expiresIn: '30d' }
+    { expiresIn: '8h' }
   );
 
   res.json({

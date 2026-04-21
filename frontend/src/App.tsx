@@ -28,7 +28,16 @@ function AppRouter() {
     const token = localStorage.getItem('store_token')
     const info = localStorage.getItem('user_info')
     if (token && info) {
-      try { return JSON.parse(info) } catch { return null }
+      try {
+        // Token muddati tugaganini tekshirish
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem('store_token')
+          localStorage.removeItem('user_info')
+          return null
+        }
+        return JSON.parse(info)
+      } catch { return null }
     }
     return null
   })
