@@ -9,3 +9,9 @@ backend/.env
 *.log
 .DS_Store
 Thumbs.db
+
+# Android build outputs
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/local.properties

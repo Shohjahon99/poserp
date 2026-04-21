@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">POS ERP</string>
+    <string name="title_activity_main">POS ERP</string>
+    <string name="package_name">uz.poserp.app</string>
+    <string name="custom_url_scheme">uz.poserp.app</string>
+</resources>
