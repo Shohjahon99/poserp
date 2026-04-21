@@ -30,6 +30,12 @@ export default function SuperAdmin() {
   const [selectedStore, setSelectedStore] = useState<StoreDetail | null>(null)
   const [approvedInfo, setApprovedInfo] = useState<{ login: string; password: string; store_name: string } | null>(null)
 
+  // Change password modal
+  const [showProfile, setShowProfile] = useState(false)
+  const [profileForm, setProfileForm] = useState({ name: '', username: '', current_password: '', new_password: '' })
+  const [profileError, setProfileError] = useState('')
+  const [profileSuccess, setProfileSuccess] = useState(false)
+
   // Add store modal
   const [showAddStore, setShowAddStore] = useState(false)
   const [addForm, setAddForm] = useState({ owner_name: '', phone: '', address: '', store_name: '', director_name: '', director_login: '', director_password: '' })
@@ -130,6 +136,23 @@ export default function SuperAdmin() {
     setAddLoading(false)
   }
 
+  // Profil o'zgartirish
+  const handleProfile = async () => {
+    setProfileError(''); setProfileSuccess(false)
+    if (!profileForm.name || !profileForm.username) { setProfileError("Ism va login majburiy"); return }
+    if (profileForm.new_password && !profileForm.current_password) { setProfileError("Yangi parol uchun joriy parolni kiriting"); return }
+    try {
+      const res = await adminApi.put('/profile', profileForm)
+      localStorage.setItem('admin_info', JSON.stringify(res.data.admin))
+      setAdmin(res.data.admin)
+      setProfileSuccess(true)
+      setProfileForm(f => ({ ...f, current_password: '', new_password: '' }))
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } }
+      setProfileError(e.response?.data?.error || 'Xatolik')
+    }
+  }
+
   // Xodimni tahrirlash
   const handleEditUser = async () => {
     if (!editUser) return
@@ -197,6 +220,8 @@ export default function SuperAdmin() {
         <Shield size={20} className="text-yellow-500" />
         <h1 className="font-bold flex-1">POS ERP Admin</h1>
         <span className="text-sm text-gray-400">{admin.name}</span>
+        <button onClick={() => { setProfileForm({ name: admin.name, username: admin.username, current_password: '', new_password: '' }); setProfileError(''); setProfileSuccess(false); setShowProfile(true) }}
+          className="p-1.5 hover:bg-gray-800 rounded" title="Profilni o'zgartirish"><Key size={16} /></button>
         <button onClick={handleLogout} className="p-1.5 hover:bg-gray-800 rounded"><LogOut size={16} /></button>
       </header>
 
@@ -454,6 +479,41 @@ export default function SuperAdmin() {
               <button onClick={handleAddStore} disabled={addLoading} className="btn btn-primary w-full">
                 {addLoading ? 'Yaratilmoqda...' : "Do'kon yaratish"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profile / Change Password Modal */}
+      {showProfile && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="font-bold flex items-center gap-2"><Key size={16} /> Admin profil</h3>
+              <button onClick={() => setShowProfile(false)}><X size={20} className="text-gray-400" /></button>
+            </div>
+            <div className="p-6 space-y-3">
+              {profileError && <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">{profileError}</div>}
+              {profileSuccess && <div className="bg-green-50 text-green-700 text-sm px-3 py-2 rounded-lg">✅ Muvaffaqiyatli saqlandi!</div>}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Ism</label>
+                <input className="input" placeholder="Ism" value={profileForm.name} onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Login</label>
+                <input className="input font-mono" placeholder="Login" value={profileForm.username} onChange={e => setProfileForm(f => ({ ...f, username: e.target.value }))} />
+              </div>
+              <hr className="my-2" />
+              <p className="text-xs text-gray-400">Parolni o'zgartirish (ixtiyoriy)</p>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Joriy parol</label>
+                <input type="password" className="input font-mono" placeholder="Joriy parol" value={profileForm.current_password} onChange={e => setProfileForm(f => ({ ...f, current_password: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Yangi parol</label>
+                <input type="password" className="input font-mono" placeholder="Yangi parol" value={profileForm.new_password} onChange={e => setProfileForm(f => ({ ...f, new_password: e.target.value }))} />
+              </div>
+              <button onClick={handleProfile} className="btn btn-primary w-full">Saqlash</button>
             </div>
           </div>
         </div>

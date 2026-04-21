@@ -199,6 +199,40 @@ router.post('/stores', adminAuth, (req, res) => {
   }
 });
 
+// PUT /api/admin/profile — super admin o'z login/parolini o'zgartirish
+router.put('/profile', adminAuth, (req, res) => {
+  const { name, username, current_password, new_password } = req.body;
+  const admin = mainDb.prepare('SELECT * FROM admin_users WHERE id = ?').get(req.adminId);
+  if (!admin) return res.status(404).json({ error: 'Admin topilmadi' });
+
+  if (current_password) {
+    if (!bcrypt.compareSync(current_password, admin.password_hash)) {
+      return res.status(400).json({ error: "Joriy parol noto'g'ri" });
+    }
+  }
+
+  if (username && username !== admin.username) {
+    const dup = mainDb.prepare('SELECT id FROM admin_users WHERE username = ? AND id != ?').get(username, admin.id);
+    if (dup) return res.status(409).json({ error: 'Bu login allaqachon band' });
+  }
+
+  let sql = 'UPDATE admin_users SET name=?, username=?';
+  const params = [name ?? admin.name, username ?? admin.username];
+
+  if (new_password) {
+    if (!current_password) return res.status(400).json({ error: 'Yangi parol uchun joriy parol kerak' });
+    sql += ', password_hash=?';
+    params.push(bcrypt.hashSync(new_password, 10));
+  }
+
+  sql += ' WHERE id=?';
+  params.push(admin.id);
+  mainDb.prepare(sql).run(...params);
+
+  const updated = mainDb.prepare('SELECT id, name, username FROM admin_users WHERE id = ?').get(admin.id);
+  res.json({ success: true, admin: updated });
+});
+
 // PUT /api/admin/users/:id — xodim parolini/ma'lumotlarini o'zgartirish
 router.put('/users/:id', adminAuth, (req, res) => {
   const { name, login, password, role, is_active } = req.body;
