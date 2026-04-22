@@ -32,9 +32,12 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Capacitor sync android
-        working-directory: frontend
-        run: ./node_modules/.bin/cap sync android
+      - name: Copy web assets to Android
+        run: |
+          rm -rf frontend/android/app/src/main/assets/public
+          mkdir -p frontend/android/app/src/main/assets/public
+          cp -r frontend/dist/. frontend/android/app/src/main/assets/public/
+          cp frontend/capacitor.config.json frontend/android/app/src/main/assets/capacitor.config.json
 
       - name: Make Gradle executable
         run: chmod +x frontend/android/gradlew
