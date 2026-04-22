@@ -39,6 +39,9 @@ jobs:
           cp -r frontend/dist/. frontend/android/app/src/main/assets/public/
           cp frontend/capacitor.config.json frontend/android/app/src/main/assets/capacitor.config.json
 
+      - name: Create local.properties
+        run: echo "sdk.dir=/usr/local/lib/android/sdk" > frontend/android/local.properties
+
       - name: Make Gradle executable
         run: chmod +x frontend/android/gradlew
 
