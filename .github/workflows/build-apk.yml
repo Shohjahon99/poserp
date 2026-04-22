@@ -24,14 +24,12 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('frontend/android/**/*.gradle*', 'frontend/android/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: gradle-
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK platforms
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
       - name: Install frontend deps
         working-directory: frontend
@@ -41,31 +39,22 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Copy web assets to Android
-        run: |
-          rm -rf frontend/android/app/src/main/assets/public
-          mkdir -p frontend/android/app/src/main/assets/public
-          cp -r frontend/dist/. frontend/android/app/src/main/assets/public/
-          cp frontend/capacitor.config.json frontend/android/app/src/main/assets/capacitor.config.json
-
-      - name: Create local.properties
-        run: echo "sdk.dir=/usr/local/lib/android/sdk" > frontend/android/local.properties
+      - name: Capacitor sync
+        working-directory: frontend
+        run: npx cap sync android
 
       - name: Make Gradle executable
         run: chmod +x frontend/android/gradlew
 
       - name: Build Debug APK
         working-directory: frontend/android
-        env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
           set -o pipefail
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle-build.log
-          echo "=== Build complete. Checking output ==="
-          find . -name "*.apk" 2>/dev/null || echo "No APK files found"
+          ./gradlew assembleDebug --no-daemon 2>&1 | tee /tmp/gradle-build.log
+          echo "=== APK files ==="
+          find . -name "*.apk" 2>/dev/null || echo "No APK found"
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: POS-ERP-Android
