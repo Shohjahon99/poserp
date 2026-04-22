@@ -1,0 +1,12 @@
+{
+  "appId": "uz.poserp.app",
+  "appName": "POS ERP",
+  "webDir": "dist",
+  "server": {
+    "url": "https://www.pos-erp.uz",
+    "cleartext": false
+  },
+  "android": {
+    "backgroundColor": "#ffffff"
+  }
+}
