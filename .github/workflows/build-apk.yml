@@ -24,6 +24,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
       - name: Install frontend deps
         working-directory: frontend
         run: npm install --legacy-peer-deps
@@ -40,7 +46,7 @@ jobs:
           cp frontend/capacitor.config.json frontend/android/app/src/main/assets/capacitor.config.json
 
       - name: Create local.properties
-        run: echo "sdk.dir=/usr/local/lib/android/sdk" > frontend/android/local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > frontend/android/local.properties
 
       - name: Make Gradle executable
         run: chmod +x frontend/android/gradlew
