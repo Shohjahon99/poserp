@@ -58,7 +58,12 @@ jobs:
         working-directory: frontend/android
         env:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        run: ./gradlew assembleDebug --no-daemon --info 2>&1 | tail -50
+          ANDROID_HOME: /usr/local/lib/android/sdk
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle-build.log
+          echo "=== Build complete. Checking output ==="
+          find . -name "*.apk" 2>/dev/null || echo "No APK files found"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -66,3 +71,11 @@ jobs:
           name: POS-ERP-Android
           path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-log
+          path: /tmp/gradle-build.log
+          retention-days: 7
