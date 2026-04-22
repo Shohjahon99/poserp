@@ -34,7 +34,7 @@ jobs:
 
       - name: Capacitor sync android
         working-directory: frontend
-        run: npx cap sync android --inline
+        run: ./node_modules/.bin/cap sync android
 
       - name: Make Gradle executable
         run: chmod +x frontend/android/gradlew
