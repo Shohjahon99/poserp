@@ -13,4 +13,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd backend && node src/server.js"
+cmd = "cd backend && node --experimental-sqlite src/server.js"

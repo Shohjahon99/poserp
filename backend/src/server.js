@@ -31,7 +31,16 @@ app.use('/api/audit',      storeAuth, require('./routes/audit'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '2.2.0', time: new Date().toISOString() });
+  const mainDb = require('./mainDb');
+  let dbOk = false;
+  try { mainDb.prepare('SELECT 1').get(); dbOk = true; } catch {}
+  res.json({
+    status: 'ok',
+    version: '2.3.0',
+    time: new Date().toISOString(),
+    db: dbOk ? 'ok' : 'error',
+    node: process.version,
+  });
 });
 
 // ===== Serve frontend =====
