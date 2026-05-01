@@ -43,6 +43,21 @@ jobs:
         working-directory: frontend
         run: npx cap sync android
 
+      - name: Fix capacitor-cordova-android-plugins build.gradle
+        working-directory: frontend/android/capacitor-cordova-android-plugins
+        run: |
+          # Remove standalone buildscript block if cap sync added one (causes classloader conflict)
+          python3 - <<'PYEOF'
+          import re, pathlib
+          p = pathlib.Path("build.gradle")
+          content = p.read_text(encoding="utf-8")
+          # Remove buildscript { ... } block (including nested braces)
+          fixed = re.sub(r'buildscript\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)?\}', '', content, flags=re.DOTALL)
+          p.write_text(fixed, encoding="utf-8")
+          print("build.gradle after fix:")
+          print(p.read_text())
+          PYEOF
+
       - name: Make Gradle executable
         run: chmod +x frontend/android/gradlew
 
