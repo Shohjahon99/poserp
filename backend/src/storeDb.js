@@ -6,7 +6,7 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const fs = require('fs');
 
-const storesDir = path.join(__dirname, '..', 'data', 'stores');
+const storesDir = path.join(process.env.DATA_DIR || path.join(__dirname, '..', 'data'), 'stores');
 
 // Cache — ochiq bazalar
 const dbCache = new Map();
